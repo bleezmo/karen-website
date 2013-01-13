@@ -5,6 +5,18 @@ URI:  http://themeforest.net/user/graphic_dev?ref=graphic_dev
 */
 
 /* Use this file to override style.css */
+header h1,
 hgroup h1 {
     font-family:'American Typewriter', 'Courier New', Courier, Monaco, mono
 }
+body, button, input, select, textarea {
+    font-family:'American Typewriter', 'Courier New', Courier, Monaco, mono
+}
+
+nav ul li {
+    padding:5px 0;
+    height:32px;
+    margin-bottom:35px;
+}
+/* Contact Me ======================= */
+#contact-form { margin-top:0px; }
