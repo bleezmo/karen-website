@@ -18,5 +18,7 @@ nav ul li {
     height:32px;
     margin-bottom:35px;
 }
+
+.icon.stage32 { background:url(../img/icons/stage32-29x29.png) no-repeat; }
 /* Contact Me ======================= */
 #contact-form { margin-top:0px; }
