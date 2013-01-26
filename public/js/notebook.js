@@ -13,7 +13,6 @@ $(document).ready(function () {
 	$("#home-link").click(function () { 
 		$("header").addClass("ir", 5000);
 	});
-    
     /* Image hover */
     $('a img').not('a.next img, a.prev img, nav a img, a.network img').hover(
       function () {
@@ -57,7 +56,7 @@ $(document).ready(function () {
         fx:     'fade',
         speed:  'medium',
         timeout: 0,
-        prev:   '#connect-nav .prev', 
+        prev:   '#connect-nav .prev',
         next:   '#connect-nav .next',
         after:   onAfterConnect
     });
