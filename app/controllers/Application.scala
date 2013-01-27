@@ -29,7 +29,7 @@ object Application extends Controller {
     mail.setSubject("karencecilia.com message from "+name)
     mail.addRecipient("infokarencecilia@gmail.com")
     mail.addFrom(email)
-    mail.send(name+" has sent you a message:\n"+message)
+    mail.send(name+" has sent you a message:\n\n"+message)
   }
   
 }
