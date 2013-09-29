@@ -5,8 +5,12 @@
 # Home page
 GET     /                           controllers.Application.index
 POST    /postmail                   controllers.Application.postMail
-GET     /receivetext                controllers.Application.receiveText
-POST    /receivetext                controllers.Application.receiveTextWithBody
+
+GET     /scavengerhunt              controllers.ScavengerHunt.index
+GET     /scavengerhunt/receivetext  controllers.ScavengerHunt.receiveText
+GET     /scavengerhunt/hunts        controllers.ScavengerHunt.getHunts
+POST    /scavengerhunt/hunts        controllers.ScavengerHunt.newHunt
+GET     /scavengerhunt/hunts/:hunt  controllers.ScavengerHunt.getHunt(hunt: ObjectId)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
