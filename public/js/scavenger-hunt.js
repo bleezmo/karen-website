@@ -11,6 +11,16 @@ shapp.factory('Hunts', ['$resource',function($resource){
         }
     );
 }]);
+shapp.factory("SMS", ['$resource', function($resource){
+    return $resource(
+        "/scavengerhunt/:method",
+        {},
+        {
+            sendText: {method: "POST", params: {method: "sendtext"}},
+            receiveText: {method: "GET", params: {method: "receivetext"}}
+        }
+    )
+}]);
 function ModalInstanceCtrl($scope, $modalInstance, Hunts) {
   $scope.groups = [{id:0, name: "", participants: [{id: 0, name: "", number: "", group: ""}]}]
   $scope.ok = function () {
@@ -44,7 +54,7 @@ function ModalInstanceCtrl($scope, $modalInstance, Hunts) {
 };
 shapp.controller('ModalInstanceCtrl', ['$scope','$modalInstance','Hunts', ModalInstanceCtrl])
 
-shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', function ($scope,$modal){
+shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', 'SMS', function ($scope,$modal, SMS){
 
     $scope.showNewModal = false;
     $scope.new = function(){
@@ -52,16 +62,25 @@ shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', function ($scope,$moda
     }
     $scope.open = function () {
 
-    var modalInstance = $modal.open({
-      templateUrl: 'myModalContent.html',
-      controller: ModalInstanceCtrl
-    });
+        var modalInstance = $modal.open({
+          templateUrl: 'myModalContent.html',
+          controller: ModalInstanceCtrl
+        });
 
-    modalInstance.result.then(function (hunt) {
-      console.log(hunt)
-      $scope.hunt = hunt;
-    }, function () {
-      console.log('Modal dismissed at: ' + new Date());
-    });
+        modalInstance.result.then(function (hunt) {
+          console.log(hunt)
+          $scope.hunt = hunt;
+        }, function () {
+          console.log('Modal dismissed at: ' + new Date());
+        });
     };
+    $scope.sendText = function(){
+        if($scope.receiver && $scope.smstext){
+            SMS.sendText({to: $scope.receiver},{message: $scope.smstext},function(response){
+
+            },function(error){
+
+            })
+        }
+    }
 }]);

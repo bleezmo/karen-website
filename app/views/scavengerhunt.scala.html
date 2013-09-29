@@ -48,11 +48,16 @@
         </div>
     </script>
     <button class="btn" ng-click="open()">Open me!</button>
-    <div ng-show="selected">Selection from a modal: {{ selected }}</div>
 
     <button ng-click="new()">New</button>
     <ul>
         <li ng-repeat="hunt in hunts"><a href="/scavengerhunt/{{hunt.id}}">{{hunt.date}}</a></li>
     </ul>
+    <div>
+        Send text: <br/>
+        To: <input type="text" ng-model="receiver">
+        Message: <input type="text" ng-model="smstext">
+        <button ng-click="sendText()">Send</button>
+    </div>
 </body>
 </html>

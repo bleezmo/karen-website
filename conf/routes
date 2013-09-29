@@ -8,6 +8,7 @@ POST    /postmail                   controllers.Application.postMail
 
 GET     /scavengerhunt              controllers.ScavengerHunt.index
 GET     /scavengerhunt/receivetext  controllers.ScavengerHunt.receiveText
+POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to)
 GET     /scavengerhunt/hunts        controllers.ScavengerHunt.getHunts
 POST    /scavengerhunt/hunts        controllers.ScavengerHunt.newHunt
 GET     /scavengerhunt/hunts/:hunt  controllers.ScavengerHunt.getHunt(hunt: ObjectId)
