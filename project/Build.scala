@@ -9,13 +9,12 @@ object ApplicationBuild extends Build {
 
     val appDependencies = Seq(
       "com.typesafe" %% "play-plugins-mailer" % "2.1-RC2",
-      "se.radley" %% "play-plugins-salat" % "1.3.0",
-      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
+      "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+      "com.novus" %% "salat" % "1.9.2"
     )
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
-      routesImport += "se.radley.plugin.salat.Binders._",
-      templatesImport += "org.bson.types.ObjectId"
+
     )
 
 }

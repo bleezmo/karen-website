@@ -46,7 +46,7 @@ object ScavengerHunt extends Controller{
       case None => BadRequest("no json to create hunt")
     }
   }
-  def getHunt(hunt: ObjectId) = Action{request=>
+  def getHunt(hunt: String) = Action{request=>
     Ok
   }
   private def encodeURIComponent(s:String):String = {

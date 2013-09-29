@@ -6,7 +6,6 @@ import com.novus.salat._
 import com.novus.salat.annotations._
 import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
-import se.radley.plugin.salat._
 import mongoContext._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -21,7 +20,7 @@ object Session{
 }
 case class Group (name:String, sessions:Seq[Session], participants:Seq[Participant], id: ObjectId = new ObjectId())
 object Group extends ModelCompanion[Group,ObjectId]{
-  val dao = new SalatDAO[Group, ObjectId](collection = mongoCollection("groups")) {}
+  val dao = new SalatDAO[Group, ObjectId](collection = db("groups")) {}
 
   implicit val groupReads:Reads[Group] = (
     (JsPath \ "name").read[String] and
