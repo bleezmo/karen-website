@@ -2,12 +2,12 @@ var shapp = angular.module('sh',['ui.bootstrap', 'ngResource']);
 
 shapp.factory('Hunts', ['$resource',function($resource){
     return $resource(
-        "/scavengerhunt/hunts",
+        "/scavengerhunt/hunts/:hunt",
         {},
         {
             newHunt: {method: "POST"},
             getAll: {method: "GET", isArray: true},
-            get: {method: "GET", url:"/scavengerhunt/hunts/:hunt"}
+            get: {method: "GET"}
         }
     );
 }]);

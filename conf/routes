@@ -7,11 +7,18 @@ GET     /                           controllers.Application.index
 POST    /postmail                   controllers.Application.postMail
 
 GET     /scavengerhunt              controllers.ScavengerHunt.index
+
 GET     /scavengerhunt/receivetext  controllers.ScavengerHunt.receiveText
-POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to)
+GET     /scavengerhunt/nexmoendpoint    controllers.ScavengerHunt.nexmoEndpoint
+POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to:String)
+
 GET     /scavengerhunt/hunts        controllers.ScavengerHunt.getHunts
 POST    /scavengerhunt/hunts        controllers.ScavengerHunt.newHunt
 GET     /scavengerhunt/hunts/:hunt  controllers.ScavengerHunt.getHunt(hunt: String)
+
+POST    /scavengerhunt/hunts/:hunt/clues    controllers.ScavengerHunt.uploadClue(hunt: String)
+GET     /scavengerhunt/hunts/:hunt/clues    controllers.ScavengerHunt.getClues(hunt: String)
+GET     /scavengerhunt/hunts/:hunt/clues/:clueId  controllers.ScavengerHunt.getClue(hunt: String, clueId: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

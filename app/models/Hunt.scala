@@ -10,9 +10,19 @@ import mongoContext._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class Hunt (date: Date, groups:Seq[Group], id: ObjectId = new ObjectId())
+case class Hunt (date: Date = new Date(), groups:Seq[Group] = Seq(), active:Boolean = true, id: ObjectId = new ObjectId())
 object Hunt extends ModelCompanion[Hunt,ObjectId]{
   val dao = new SalatDAO[Hunt, ObjectId](collection = db("hunts")) {}
+
+  def newHunt:Hunt = {
+    closeActiveHunt
+    Hunt.findOneById(Hunt.insert(Hunt()).get).get
+  }
+
+  def getActiveHunt:Option[Hunt] = Hunt.findOne(MongoDBObject("active" -> true))
+  def closeActiveHunt = {
+    Hunt.update(MongoDBObject("active" -> true),MongoDBObject("active" -> false),false,false)
+  }
 
   implicit val huntReads:Reads[Hunt] = (
     (JsPath \ "groups").read[Seq[Group]]

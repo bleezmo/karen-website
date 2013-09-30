@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.Hunt
+import models.{Group, Hunt}
 import org.bson.types.ObjectId
 import play.api.libs.json._
 import com.novus.salat.dao.SalatInsertError
@@ -13,15 +13,35 @@ import com.ning.http.client.Response
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import java.net.URLEncoder
+import com.mongodb.casbah.commons._
+import com.typesafe.config.ConfigFactory
 
 object ScavengerHunt extends Controller{
   def index = Action{request=>
+    Logger.info(request.uri)
+    Logger.info(request.getQueryString("blergl").toString)
     Ok(views.html.scavengerhunt())
   }
   def receiveText = Action {request =>
     Ok
   }
   def getHunts = Action{request=>
+    Ok(JsArray(Hunt.find(MongoDBObject()).foldRight[Seq[JsValue]](Seq())((hunt,acc) => {
+      acc :+ Json.toJson(hunt)
+    })))
+  }
+  def nexmoEndpoint = Action{request =>
+    Logger.info("received text: "+request.uri)
+    val number = request.getQueryString("msisdn")
+    val message = request.getQueryString("text")
+    if (number.isDefined && message.isDefined){
+      message.get match {
+        case x if x.startsWith("start") => {
+
+        }
+        case x =>
+      }
+    } else Logger.error("received badly formatted text")
     Ok
   }
   def newHunt = Action{request=>
@@ -47,7 +67,10 @@ object ScavengerHunt extends Controller{
     }
   }
   def getHunt(hunt: String) = Action{request=>
-    Ok
+    Hunt.findOneById(new ObjectId(hunt)) match {
+      case Some(hunt) => Ok(Json.toJson(hunt))
+      case None => NotFound("hunt not found")
+    }
   }
   private def encodeURIComponent(s:String):String = {
     URLEncoder.encode(s, "UTF-8")
@@ -59,10 +82,10 @@ object ScavengerHunt extends Controller{
       .replaceAll("\\%7E", "~");
   }
   def sendText(to:String) = Action {request=>
-    val base_url = "https://rest.nexmo.com/sms/json"
-    val from = "14242860001"
-    val apiKey = "a15a3ba2"
-    val apiSecret = "afd14132"
+    val base_url = ConfigFactory.load().getString("NEXMO_BASE_URL")
+    val from = ConfigFactory.load().getString("NEXMO_NUMBER")
+    val apiKey = ConfigFactory.load().getString("NEXMO_API_KEY")
+    val apiSecret = ConfigFactory.load().getString("NEXMO_API_SECRET")
     request.body.asJson match {
       case Some(json) => {
         (json \ "message").asOpt[String] match {
@@ -78,5 +101,14 @@ object ScavengerHunt extends Controller{
       }
       case None => BadRequest("no message received")
     }
+  }
+  def uploadClue(huntId: String) = Action{request =>
+  Ok
+  }
+  def getClues(huntId: String) = Action{request =>
+    Ok
+  }
+  def getClue(huntId: String, clueId: String) = Action{request =>
+    Ok
   }
 }

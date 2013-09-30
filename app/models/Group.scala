@@ -22,6 +22,19 @@ case class Group (name:String, sessions:Seq[Session], participants:Seq[Participa
 object Group extends ModelCompanion[Group,ObjectId]{
   val dao = new SalatDAO[Group, ObjectId](collection = db("groups")) {}
 
+  def addParticipant(groupName: String, p: Participant){
+    Group.findOne(MongoDBObject("name" -> groupName)) match {
+      case Some(group) => addParticipant(group.id, p)
+      case None => Group.insert(Group(groupName,Seq(),Seq(p)))
+    }
+  }
+
+  def addParticipant(groupId: ObjectId, p:Participant) = {
+    Group.update(MongoDBObject("_id" -> groupId),
+      MongoDBObject("$push" -> MongoDBObject("participants" -> grater[Participant].asDBObject(p))),
+      false,false)
+  }
+
   implicit val groupReads:Reads[Group] = (
     (JsPath \ "name").read[String] and
     (JsPath \ "participants").read[Seq[Participant]]
