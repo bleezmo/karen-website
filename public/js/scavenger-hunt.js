@@ -1,4 +1,4 @@
-var shapp = angular.module('sh',['ui.bootstrap', 'ngResource']);
+var shapp = angular.module('sh',['ui.bootstrap', 'ngResource', 'ngRoute']);
 
 shapp.factory('Hunts', ['$resource',function($resource){
     return $resource(
@@ -54,12 +54,10 @@ function ModalInstanceCtrl($scope, $modalInstance, Hunts) {
 };
 shapp.controller('ModalInstanceCtrl', ['$scope','$modalInstance','Hunts', ModalInstanceCtrl])
 
-shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', 'SMS', function ($scope,$modal, SMS){
+shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', 'SMS', 'Hunts',
+function ($scope, $modal, SMS, Hunts){
 
     $scope.showNewModal = false;
-    $scope.new = function(){
-
-    }
     $scope.open = function () {
 
         var modalInstance = $modal.open({
@@ -74,13 +72,33 @@ shapp.controller("ScavengerHuntCtrl",['$scope', '$modal', 'SMS', function ($scop
           console.log('Modal dismissed at: ' + new Date());
         });
     };
-    $scope.sendText = function(){
-        if($scope.receiver && $scope.smstext){
-            SMS.sendText({to: $scope.receiver},{message: $scope.smstext},function(response){
-
-            },function(error){
-
-            })
+    $scope.newHunt = function(){
+        Hunts.newHunt({},{groups: []},function(hunt){
+            $scope.setSelectedHunt(hunt)
+        },function(error){
+            console.error(error)
+        })
+    }
+    $scope.setSelectedHunt = function(hunt){
+        console.log(hunt)
+        $scope.selectedHunt = hunt
+        $scope.showSelectedHunt = true;
+    }
+    Hunts.getAll({},function(hunts){
+        $scope.hunts = hunts
+    },function(error){
+        console.log(error)
+    })
+    $scope.sendText = function(group,textmsg){
+        if(textmsg && group.participants){
+           _.each(group.participants,function(p){
+               SMS.sendText({to: p.number},{message: textmsg},function(response){
+                    console.log(response)
+                },function(error){
+                    console.log(error)
+                })
+           })
         }
     }
+
 }]);

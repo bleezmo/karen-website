@@ -2,13 +2,14 @@
 <html ng-app='sh'>
 <head>
     <title>Scavenger Hunt</title>
-    <script src="/assets/js/angular.min.js"></script>
-    <script src="/assets/js/angular-resource.min.js"></script>
+    <script src="/assets/js/vendor/angular.min.js"></script>
+    <script src="/assets/js/vendor/angular-resource.min.js"></script>
+    <script src="/assets/js/vendor/angular-route.min.js"></script>
     <script src="/assets/js/scavenger-hunt.js"></script>
     <link href='/assets/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
     <link href='/assets/css/bootstrap-responsive.min.css' rel='stylesheet' type='text/css'>
-    <script src="/assets/js/ui-bootstrap-custom-tpls-0.6.0.min.js"></script>
-    <script src="/assets/js/underscore-min.js"></script>
+    <script src="/assets/js/vendor/ui-bootstrap-custom-tpls-0.6.0.min.js"></script>
+    <script src="/assets/js/vendor/underscore-min.js"></script>
 </head>
 <body ng-controller='ScavengerHuntCtrl'>
 
@@ -47,15 +48,28 @@
             <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
         </div>
     </script>
-    <button class="btn" ng-click="open()">New</button>
-    <ul>
-        <li ng-repeat="hunt in hunts"><a href="/scavengerhunt/{{hunt.id}}">{{hunt.date}}</a></li>
-    </ul>
-    <div>
-        Send text: <br/>
-        To: <input type="text" ng-model="receiver">
-        Message: <input type="text" ng-model="smstext">
-        <button ng-click="sendText()">Send</button>
+    <div class="container-fluid">
+        <div class="span2">
+            <button class="btn" ng-click="newHunt()">New Hunt</button>
+            <ul>
+                <li ng-repeat="hunt in hunts"><a href="" ng-click="setSelectedHunt(hunt)">{{hunt.date}}</a></li>
+            </ul>
+        </div>
+        <div class="span10" ng-show="showSelectedHunt">
+            <h3>Groups</h3>
+            <div ng-repeat="group in selectedHunt.groups" style="border: 1px solid; margin-bottom: 5px; padding: 5px;">
+                <h4>Group {{group.name}}</h4>
+                <div style="display: inline-block">
+                    <p>Participants ({{group.participants.length}} total)</p>
+                    <p ng-repeat="participant in group.participants">{{participant}}</p>
+                </div>
+                <div style="display: inline-block">
+
+                </div>
+                <textarea ng-model="textmsg"></textarea>
+                <button ng-click="sendText(group,textmsg)">Send Group Text</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>

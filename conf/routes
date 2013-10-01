@@ -7,8 +7,9 @@ GET     /                           controllers.Application.index
 POST    /postmail                   controllers.Application.postMail
 
 GET     /scavengerhunt              controllers.ScavengerHunt.index
+GET     /scavengerhunt/hunt/:hunt        controllers.ScavengerHunt.displayHunt(hunt)
 
-GET     /scavengerhunt/receivetext  controllers.ScavengerHunt.receiveText
+GET     /scavengerhunt/receivetexts  controllers.ScavengerHunt.receiveTexts
 GET     /scavengerhunt/nexmoendpoint    controllers.ScavengerHunt.nexmoEndpoint
 POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to:String)
 

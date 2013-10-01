@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.{Group, Hunt}
+import models.{Participant, Group, Hunt}
 import org.bson.types.ObjectId
 import play.api.libs.json._
 import com.novus.salat.dao.SalatInsertError
@@ -18,11 +18,16 @@ import com.typesafe.config.ConfigFactory
 
 object ScavengerHunt extends Controller{
   def index = Action{request=>
-    Logger.info(request.uri)
-    Logger.info(request.getQueryString("blergl").toString)
     Ok(views.html.scavengerhunt())
   }
-  def receiveText = Action {request =>
+  def displayHunt(huntId:String) = Action{request=>
+    Hunt.findOneById(new ObjectId(huntId)) match {
+      case Some(hunt) => Ok(views.html.hunt(hunt))
+      case None => BadRequest("uh oh. no hunt found")
+    }
+  }
+  def receiveTexts = Action {request =>
+
     Ok
   }
   def getHunts = Action{request=>
@@ -37,7 +42,13 @@ object ScavengerHunt extends Controller{
     if (number.isDefined && message.isDefined){
       message.get match {
         case x if x.startsWith("start") => {
-
+          val xsplit = x.split(" ")
+          if(xsplit.length == 2){
+            val name = xsplit(1).split(":")
+            val groupName = name(0)
+            val participantName = if (name.length == 2) name(1) else ""
+            Group.addParticipant(groupName,Participant(number.get,participantName))
+          }
         }
         case x =>
       }
