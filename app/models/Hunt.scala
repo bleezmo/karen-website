@@ -20,6 +20,7 @@ object Hunt extends ModelCompanion[Hunt,ObjectId]{
   }
 
   def getActiveHunt:Option[Hunt] = Hunt.findOne(MongoDBObject("active" -> true))
+  def getActiveGroups:Seq[Group] = getActiveHunt.map(_.groups).getOrElse(Seq())
   def closeActiveHunt = {
     Hunt.update(MongoDBObject("active" -> true),MongoDBObject("active" -> false),false,false)
   }

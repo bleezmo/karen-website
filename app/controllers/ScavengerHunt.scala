@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.{Participant, Group, Hunt}
+import models._
 import org.bson.types.ObjectId
 import play.api.libs.json._
 import com.novus.salat.dao.SalatInsertError
@@ -15,20 +15,27 @@ import play.api.libs.concurrent.Execution.Implicits._
 import java.net.URLEncoder
 import com.mongodb.casbah.commons._
 import com.typesafe.config.ConfigFactory
+import dispatch.Req
+import com.novus.salat.dao.SalatInsertError
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsSuccess
+import scala.Some
 
 object ScavengerHunt extends Controller{
   def index = Action{request=>
     Ok(views.html.scavengerhunt())
   }
-  def displayHunt(huntId:String) = Action{request=>
-    Hunt.findOneById(new ObjectId(huntId)) match {
-      case Some(hunt) => Ok(views.html.hunt(hunt))
-      case None => BadRequest("uh oh. no hunt found")
-    }
+  def receiveGroupTexts(groupId:String, limit:Int,cutoff:Option[Long]) = Action {request =>
+    Ok(Json.toJson(GroupQueue.getMessages(new ObjectId(groupId),cutoff,limit)))
   }
-  def receiveTexts = Action {request =>
-
-    Ok
+  def receiveTexts(limit:Int,cutoff:Option[Long]) = Action{request =>
+    Ok(Json.toJson(
+      Hunt.getActiveHunt.map(hunt =>
+        hunt.groups.map(group =>
+          GroupQueue.getMessages(group.id,cutoff,limit)
+        ).flatten
+      ).getOrElse(Seq())
+    ))
   }
   def getHunts = Action{request=>
     Ok(JsArray(Hunt.find(MongoDBObject()).foldRight[Seq[JsValue]](Seq())((hunt,acc) => {
@@ -50,7 +57,10 @@ object ScavengerHunt extends Controller{
             Group.addParticipant(groupName,Participant(number.get,participantName))
           }
         }
-        case x =>
+        //add message to queue
+        case x => Hunt.getActiveGroups
+          .find(g => g.participants.find(_.number == number).isDefined)
+          .foreach(group => GroupQueue.append(group.id,x))
       }
     } else Logger.error("received badly formatted text")
     Ok
@@ -77,11 +87,16 @@ object ScavengerHunt extends Controller{
       case None => BadRequest("no json to create hunt")
     }
   }
-  def getHunt(hunt: String) = Action{request=>
+  def getHunt(hunt: String) = Action{ request=>
     Hunt.findOneById(new ObjectId(hunt)) match {
       case Some(hunt) => Ok(Json.toJson(hunt))
       case None => NotFound("hunt not found")
     }
+  }
+  def deleteHunt(hunt:String) = Action{ request =>
+    val wr = Hunt.removeById(new ObjectId(hunt))
+    if(wr.getLastError.ok()) Ok
+    else InternalServerError
   }
   private def encodeURIComponent(s:String):String = {
     URLEncoder.encode(s, "UTF-8")
@@ -113,13 +128,28 @@ object ScavengerHunt extends Controller{
       case None => BadRequest("no message received")
     }
   }
-  def uploadClue(huntId: String) = Action{request =>
-  Ok
+  def uploadItem = Action{request =>
+    request.body.asJson match {
+      case Some(json) => Json.fromJson[Item](json) match {
+        case JsSuccess(item,_) => Item.insert(item) match {
+          case Some(id) => Item.findOneById(id) match {
+            case Some(dbitem) => Ok(Json.toJson(dbitem))
+            case None => InternalServerError("couldn't find item just inserted")
+          }
+          case None => InternalServerError("error occured while inserting item")
+        }
+        case JsError(errors) => BadRequest(JsError.toFlatJson(errors))
+      }
+      case None => BadRequest("no json found")
+    }
   }
-  def getClues(huntId: String) = Action{request =>
+  def getItems(huntId: String) = Action{request =>
     Ok
   }
-  def getClue(huntId: String, clueId: String) = Action{request =>
+  def getItem(huntId: String, clueId: String) = Action{request =>
     Ok
+  }
+  def getAllItems = Action{request =>
+    Ok(Json.toJson(Item.findAll().foldLeft[Seq[Item]](Seq())((acc,item) => acc :+ item)))
   }
 }

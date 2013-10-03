@@ -25,7 +25,7 @@ object Group extends ModelCompanion[Group,ObjectId]{
   def addParticipant(groupName: String, p: Participant){
     Group.findOne(MongoDBObject("name" -> groupName)) match {
       case Some(group) => addParticipant(group.id, p)
-      case None => Group.insert(Group(groupName,Seq(),Seq(p)))
+      case None => Group.insert(Group(groupName,Seq(),Seq(p))).map(id => GroupQueue.newQueue(id))
     }
   }
 

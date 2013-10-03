@@ -7,19 +7,22 @@ GET     /                           controllers.Application.index
 POST    /postmail                   controllers.Application.postMail
 
 GET     /scavengerhunt              controllers.ScavengerHunt.index
-GET     /scavengerhunt/hunt/:hunt        controllers.ScavengerHunt.displayHunt(hunt)
 
-GET     /scavengerhunt/receivetexts  controllers.ScavengerHunt.receiveTexts
+GET     /scavengerhunt/items        controllers.ScavengerHunt.getAllItems
+POST    /scavengerhunt/items        controllers.ScavengerHunt.uploadItem
+
+GET     /scavengerhunt/receivetexts         controllers.ScavengerHunt.receiveTexts(limit:Int = -1, cutoff:Option[Long] = None)
+GET     /scavengerhunt/receivetexts/:groupId  controllers.ScavengerHunt.receiveGroupTexts(groupId:String, limit:Int = -1, cutoff:Option[Long] = None)
 GET     /scavengerhunt/nexmoendpoint    controllers.ScavengerHunt.nexmoEndpoint
 POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to:String)
 
 GET     /scavengerhunt/hunts        controllers.ScavengerHunt.getHunts
 POST    /scavengerhunt/hunts        controllers.ScavengerHunt.newHunt
 GET     /scavengerhunt/hunts/:hunt  controllers.ScavengerHunt.getHunt(hunt: String)
+DELETE  /scavengerhunt/hunts/:hunt  controllers.ScavengerHunt.deleteHunt(hunt: String)
 
-POST    /scavengerhunt/hunts/:hunt/clues    controllers.ScavengerHunt.uploadClue(hunt: String)
-GET     /scavengerhunt/hunts/:hunt/clues    controllers.ScavengerHunt.getClues(hunt: String)
-GET     /scavengerhunt/hunts/:hunt/clues/:clueId  controllers.ScavengerHunt.getClue(hunt: String, clueId: String)
+GET     /scavengerhunt/hunts/:hunt/items    controllers.ScavengerHunt.getItems(hunt: String)
+GET     /scavengerhunt/hunts/:hunt/clues/:itemId  controllers.ScavengerHunt.getItem(hunt: String, itemId: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

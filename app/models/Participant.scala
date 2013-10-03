@@ -14,6 +14,10 @@ case class Participant (number: String, name: String = "", id: ObjectId = new Ob
 object Participant extends ModelCompanion[Participant,ObjectId]{
   val dao = new SalatDAO[Participant, ObjectId](collection = db("participants")) {}
 
+  def getParticipant(number: String):Option[Participant] = {
+    Hunt.getActiveGroups.map(_.participants).flatten.find(_.number == number)
+  }
+
   implicit val participantReads:Reads[Participant] = (
     (JsPath \ "name").readNullable[String] and
     (JsPath \ "number").read[String]
