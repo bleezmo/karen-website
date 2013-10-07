@@ -25,15 +25,14 @@ object ScavengerHunt extends Controller{
   def index = Action{request=>
     Ok(views.html.scavengerhunt())
   }
-  def receiveGroupTexts(groupId:String, limit:Int,cutoff:Option[Long]) = Action {request =>
-    Ok(Json.toJson(GroupQueue.getMessages(new ObjectId(groupId),cutoff,limit)))
-  }
-  def receiveTexts(limit:Int,cutoff:Option[Long]) = Action{request =>
-    Ok(Json.toJson(
+  def receiveTexts(cutoff:String) = Action{request =>
+    Ok(JsArray(
       Hunt.getActiveHunt.map(hunt =>
-        hunt.groups.map(group =>
-          GroupQueue.getMessages(group.id,cutoff,limit)
-        ).flatten
+        hunt.groups.foldLeft[Seq[JsValue]](Seq())((acc,groupId) => {
+          val messages = Group.getNewMessages(groupId,if(cutoff == "none") None else Some(cutoff.toLong))
+          if(messages.length > 0) acc :+ Json.obj("id" -> groupId.toString, "messages" -> messages)
+          else acc
+        })
       ).getOrElse(Seq())
     ))
   }
@@ -46,21 +45,24 @@ object ScavengerHunt extends Controller{
     Logger.info("received text: "+request.uri)
     val number = request.getQueryString("msisdn")
     val message = request.getQueryString("text")
-    if (number.isDefined && message.isDefined){
+    if (number.isDefined && message.isDefined && Hunt.getActiveHunt.isDefined){
       message.get match {
-        case x if x.startsWith("start") => {
+        case x if x.toLowerCase.startsWith("start") => {
           val xsplit = x.split(" ")
           if(xsplit.length == 2){
-            val name = xsplit(1).split(":")
-            val groupName = name(0)
-            val participantName = if (name.length == 2) name(1) else ""
-            Group.addParticipant(groupName,Participant(number.get,participantName))
+            val name = xsplit(1)
+            Group.addEndpoint(name,number.get)
           }
         }
         //add message to queue
-        case x => Hunt.getActiveGroups
-          .find(g => g.participants.find(_.number == number).isDefined)
-          .foreach(group => GroupQueue.append(group.id,x))
+        case x => {
+          Hunt.getActiveGroups
+            .find(g =>{
+            g.endpoint == number.get
+          }).foreach(group => {
+            Group.addMessage(group.id, GroupMessage(x,Direction.Sent))
+          })
+        }
       }
     } else Logger.error("received badly formatted text")
     Ok
@@ -112,20 +114,27 @@ object ScavengerHunt extends Controller{
     val from = ConfigFactory.load().getString("NEXMO_NUMBER")
     val apiKey = ConfigFactory.load().getString("NEXMO_API_KEY")
     val apiSecret = ConfigFactory.load().getString("NEXMO_API_SECRET")
-    request.body.asJson match {
-      case Some(json) => {
-        (json \ "message").asOpt[String] match {
-          case Some(message) => {
-            val request:Req = url(s"$base_url?" +
-              s"api_key=$apiKey&api_secret=$apiSecret&from=$from&to=1$to&text=${encodeURIComponent(message)}")
-            val response:Response = Await.result(Http(request),10.seconds)
-            Logger.info(response.getResponseBody)
-            Ok
+    Group.findOneById(new ObjectId(to)) match {
+      case Some(group) => request.body.asJson match {
+        case Some(json) => {
+          (json \ "message").asOpt[String] match {
+            case Some(message) => {
+              val request:Req = url(s"$base_url?" +
+                s"api_key=$apiKey&api_secret=$apiSecret&from=$from&to=${group.endpoint}&text=${encodeURIComponent(message)}")
+              val response:Response = Await.result(Http(request),10.seconds)
+              Logger.info("Nexmo response: "+response.getResponseBody)
+              Group.addMessage(group.id,GroupMessage(message,Direction.Received))
+              Ok
+            }
+            case None => BadRequest("no message property found in json")
           }
-          case None => BadRequest("no message property found in json")
         }
+        case None => BadRequest("no message received")
       }
-      case None => BadRequest("no message received")
+      case None => {
+        Logger.error("ScavengerHunt.sendText: no group found given id")
+        BadRequest("ScavengerHunt.sendText: no group found given id")
+      }
     }
   }
   def uploadItem = Action{request =>

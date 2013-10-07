@@ -1,10 +1,12 @@
-var ModalInstanceCtrl = function ($scope, $modalInstance, item) {
-  $scope.item = item
+var ModalInstanceCtrl = function ($scope, $modalInstance, item, groups) {
+  $scope.item = item;
+  $scope.groups = groups;
+  console.log(groups)
   $scope.ok = function () {
     $modalInstance.dismiss('cancel');
   };
 };
-shapp.controller("ModalInstanceCtrl",['$scope', '$modal','item', ModalInstanceCtrl])
+shapp.controller("ModalInstanceCtrl",['$scope', '$modal','item', 'groups', ModalInstanceCtrl])
 shapp.controller("ScavengerHuntCtrl",['$timeout','$scope', '$modal', 'SMS', 'Hunts', 'Items',
 function ($timeout, $scope, $modal, SMS, Hunts, Items){
 
@@ -16,12 +18,17 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
           resolve: {
             item: function(){
                 return item;
+            },
+            groups: function(){
+                var groups = []
+                if($scope.selectedHunt) $scope.selectedHunt.groups
+                return groups;
             }
           }
         });
     };
     $scope.newHunt = function(){
-        Hunts.newHunt({},{groups: []},function(hunt){
+        Hunts.newHunt({},{active: true},function(hunt){
             $scope.setSelectedHunt(hunt)
         },function(error){
             console.error(error)
@@ -50,15 +57,14 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
             })
         } else console.log("no hunt selected")
     }
-    $scope.sendText = function(group,textmsg){
-        if(textmsg && group.participants){
-           _.each(group.participants,function(p){
-               SMS.sendText({to: p.number},{message: textmsg},function(response){
-                    console.log(response)
-                },function(error){
-                    console.log(error)
-                })
-           })
+    $scope.sendText = function(group){
+        if(group.textAreaBinding){
+           SMS.sendText({to: group.id},{message: group.textAreaBinding},function(response){
+                console.log(response)
+                group.textAreaBinding = "";
+            },function(error){
+                console.log(error)
+            })
         }
     }
     $scope.submitItem = function(clue,answer){
@@ -70,6 +76,9 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
             console.log(error);
         })
     }
+    $scope.addToText = function(txt){
+        $scope.textmsg = txt;
+    }
     $scope.items = []
     $scope.hunts = []
     $scope.rawMessages = []
@@ -80,24 +89,44 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
     })
     Hunts.getAll({},function(hunts){
         $scope.hunts = hunts
+        var activeHunt = _.find($scope.hunts, function(hunt){
+            return hunt.active;
+        })
+        if(activeHunt) {
+            for(var i = 0; i < activeHunt.groups.length; i++){
+                activeHunt.groups[i].textAreaBinding = ""
+            }
+            $scope.selectedHunt = activeHunt;
+            $scope.showSelectedHunt = true;
+        }
     },function(error){
         console.log(error)
     })
+
     function checkTexts(timestamp){
-        if($scope.selectedHunt){
-            var cutoff = {}
-            if(timestamp) cutoff = {cutoff: timestamp}
-            var newTimestamp = (new Date).getTime()
+        if($scope.selectedHunt && $scope.selectedHunt.active){
+            cutoff = {cutoff: timestamp.toString()}
             SMS.receiveTexts(cutoff,function(data){
-                $scope.rawMessages.push(data)
-                $timeout(function(){checkTexts(newTimestamp)},1000)
+                var newTimestamp = timestamp
+                if($scope.selectedHunt && $scope.selectedHunt.active){
+                    _.each(data,function(groupMessages){
+                        var group = _.find($scope.selectedHunt.groups,function(g){return g.id == groupMessages.id})
+                        if(group){
+                            _.each(groupMessages.messages,function(m){
+                                if(newTimestamp < m.timestamp) newTimestamp = m.timestamp
+                                group.messages.splice(0,0,m)
+                            })
+                        }
+                    })
+                }
+                $timeout(function(){checkTexts(newTimestamp)},2000)
             },function(error){
-                console.log(error)
-                $timeout(function(){checkTexts()},1000)
+                console.log("error "+JSON.stringify(error))
+                $timeout(function(){checkTexts(timestamp)},2000)
             })
         }  else {
-            $timeout(function(){checkTexts()},1000)
+            $timeout(function(){checkTexts(timestamp)},2000)
         }
     }
-    checkTexts()
+    checkTexts((new Date).getTime())
 }]);

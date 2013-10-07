@@ -11,8 +11,7 @@ GET     /scavengerhunt              controllers.ScavengerHunt.index
 GET     /scavengerhunt/items        controllers.ScavengerHunt.getAllItems
 POST    /scavengerhunt/items        controllers.ScavengerHunt.uploadItem
 
-GET     /scavengerhunt/receivetexts         controllers.ScavengerHunt.receiveTexts(limit:Int = -1, cutoff:Option[Long] = None)
-GET     /scavengerhunt/receivetexts/:groupId  controllers.ScavengerHunt.receiveGroupTexts(groupId:String, limit:Int = -1, cutoff:Option[Long] = None)
+GET     /scavengerhunt/receivetexts         controllers.ScavengerHunt.receiveTexts(cutoff:String)
 GET     /scavengerhunt/nexmoendpoint    controllers.ScavengerHunt.nexmoEndpoint
 POST    /scavengerhunt/sendtext     controllers.ScavengerHunt.sendText(to:String)
 

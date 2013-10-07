@@ -10,13 +10,24 @@
     <link href="/assets/css/scavenger-hunt.css" rel="stylesheet" type='text/css'>
     <link href='/assets/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
     <link href='/assets/css/bootstrap-responsive.min.css' rel='stylesheet' type='text/css'>
-    <script src="/assets/js/vendor/ui-bootstrap-custom-tpls-0.6.0.min.js"></script>
+    <script src="/assets/js/vendor/ui-bootstrap-tpls-0.6.0.min.js"></script>
     <script src="/assets/js/vendor/underscore-min.js"></script>
 </head>
 <body ng-controller='ScavengerHuntCtrl'>
     <script type="text/ng-template" id="myModalContent.html">
         <div class="modal-header">
-            Clue: {{item.clue}}
+            Clue: <p>{{item.clue}}</p>
+            <div class="dropdown">
+                <a class="btn dropdown-toggle">
+                    Add To Group
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li ng-repeat="group in groups">
+                        <a href="" ng-click="group.textAreaBinding = item.clue">{{group.name}}</a>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="modal-body">
             Answer: {{item.answer}}
@@ -34,42 +45,42 @@
                     <a href="" ng-click="setSelectedHunt(hunt)">{{hunt.date}}</a>
                 </div>
         </div>
-        <div class="span4" ng-show="showSelectedHunt">
+        <div ng-init="textmsg = []" class="span5" ng-show="showSelectedHunt">
             <button ng-click="deleteHunt()">Delete This Hunt</button>
             <h3>Groups</h3>
             <div ng-repeat="group in selectedHunt.groups" class="row div-box">
                 <div>
                     Group: {{group.name}}  |  Total Participants: {{group.participants.length}} <br/>
-                    <textarea ng-model="textmsg"></textarea>
-                    <button ng-click="sendText(group,textmsg)">Send Group Text</button>
+                    <textarea ng-model="group.textAreaBinding"></textarea>
+                    <button ng-click="sendText(group)">Send Group Text</button>
                 </div>
                 <div class="row">
-                    <div class="span3">
-                        Sent Clue
-                    </div>
-                    <div class="span3">
-                        Available Clues
-
+                    <div class="span5">
+                        Messages
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Sent</th>
+                                    <th>Received</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="message in group.messages">
+                                    <td>{{message.sent}}</td>
+                                    <td>{{message.received}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="span3">
+        <div class="span4">
             Clue
             <textarea ng-model="clue"></textarea>
             <input type="text" ng-model="answer">
             <button ng-click="submitItem(clue,answer)">Submit</button>
-            <div ng-repeat="item in items">{{item.clue}}<a href="" ng-click="openItem(item)">More...</a></div>
-        </div>
-        <div class="span3">
-            Raw Messages:
-            <table class="table-bordered">
-                <tbody>
-                    <tr ng-repeat="rawMessage in rawMessages">
-                        <td>{{rawMessage.message}}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div ng-repeat="item in items"><a href="" ng-click="addToText(item.clue)">{{item.clue}}</a><a style="color: green;" href="" ng-click="openItem(item)">More...</a></div>
         </div>
     </div>
 </body>
