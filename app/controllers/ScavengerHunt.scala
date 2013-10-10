@@ -78,6 +78,7 @@ object ScavengerHunt extends Controller{
       case Some(json) => Json.fromJson[Hunt](json) match {
         case JsSuccess(hunt,_) => {
           try {
+            Hunt.closeActiveHunt
             Hunt.insert(hunt) match {
               case Some(id) => Hunt.findOneById(id) match {
                 case Some(dbhunt) => Ok(Json.toJson(dbhunt))
