@@ -85,15 +85,7 @@
             <button ng-click="submitItem(clue,answer)">Submit</button>
             <div ng-repeat="item in items">
                 <a href="" ng-click="openItem(item)">{{item.clue}}</a>
-                <a class="btn dropdown-toggle">
-                Add To Group
-                <span class="caret"></span>
-            </a>
-                <ul class="dropdown-menu">
-                    <li ng-repeat="group in selectedHunt.groups">
-                        <a href="" ng-click="group.textAreaBinding = item.clue">{{group.name}}</a>
-                    </li>
-                </ul></div>
+            </div>
         </div>
     </div>
 </body>
