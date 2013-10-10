@@ -45,29 +45,31 @@
                     <a href="" ng-click="setSelectedHunt(hunt)">{{hunt.date}}</a>
                 </div>
         </div>
-        <div ng-init="textmsg = []" class="span5" ng-show="showSelectedHunt">
+        <div ng-init="textmsg = []" class="span6" ng-show="showSelectedHunt">
             <button ng-click="deleteHunt()">Delete This Hunt</button>
             <h3>Groups</h3>
             <div ng-repeat="group in selectedHunt.groups" class="row div-box">
                 <div>
-                    Group: {{group.name}}  |  Total Participants: {{group.participants.length}} <br/>
+                    Group: {{group.name}}<br/>
                     <textarea ng-model="group.textAreaBinding"></textarea>
                     <button ng-click="sendText(group)">Send Group Text</button>
                 </div>
                 <div class="row">
-                    <div class="span5">
+                    <div class="span6">
                         Messages
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>Sent</th>
                                     <th>Received</th>
+                                    <th>Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="message in group.messages">
                                     <td>{{message.sent}}</td>
                                     <td>{{message.received}}</td>
+                                    <td>{{toDateDisplay(message.timestamp)}}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -77,10 +79,21 @@
         </div>
         <div class="span4">
             Clue
-            <textarea ng-model="clue"></textarea>
+            <textarea ng-model="clue"></textarea><br/>
+            Answer
             <input type="text" ng-model="answer">
             <button ng-click="submitItem(clue,answer)">Submit</button>
-            <div ng-repeat="item in items"><a href="" ng-click="addToText(item.clue)">{{item.clue}}</a><a style="color: green;" href="" ng-click="openItem(item)">More...</a></div>
+            <div ng-repeat="item in items">
+                <a href="" ng-click="openItem(item)">{{item.clue}}</a>
+                <a class="btn dropdown-toggle">
+                Add To Group
+                <span class="caret"></span>
+            </a>
+                <ul class="dropdown-menu">
+                    <li ng-repeat="group in selectedHunt.groups">
+                        <a href="" ng-click="group.textAreaBinding = item.clue">{{group.name}}</a>
+                    </li>
+                </ul></div>
         </div>
     </div>
 </body>

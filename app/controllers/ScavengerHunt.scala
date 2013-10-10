@@ -29,9 +29,15 @@ object ScavengerHunt extends Controller{
     Ok(JsArray(
       Hunt.getActiveHunt.map(hunt =>
         hunt.groups.foldLeft[Seq[JsValue]](Seq())((acc,groupId) => {
-          val messages = Group.getNewMessages(groupId,if(cutoff == "none") None else Some(cutoff.toLong))
-          if(messages.length > 0) acc :+ Json.obj("id" -> groupId.toString, "messages" -> messages)
-          else acc
+          Group.findOneById(groupId) match {
+            case Some(group) => {
+              acc :+ Json.toJson(group.copy(messages = group.messages.filter(gm => gm.timestamp > cutoff.toLong)))
+            }
+            case None => {
+              Logger.error("no group found in hunt!")
+              acc
+            }
+          }
         })
       ).getOrElse(Seq())
     ))

@@ -1,7 +1,6 @@
 var ModalInstanceCtrl = function ($scope, $modalInstance, item, groups) {
   $scope.item = item;
   $scope.groups = groups;
-  console.log(groups)
   $scope.ok = function () {
     $modalInstance.dismiss('cancel');
   };
@@ -21,7 +20,7 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
             },
             groups: function(){
                 var groups = []
-                if($scope.selectedHunt) $scope.selectedHunt.groups
+                if($scope.selectedHunt) groups = $scope.selectedHunt.groups
                 return groups;
             }
           }
@@ -35,7 +34,6 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
         })
     }
     $scope.setSelectedHunt = function(hunt){
-        console.log(hunt)
         $scope.selectedHunt = hunt
         $scope.showSelectedHunt = true;
     }
@@ -79,6 +77,9 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
     $scope.addToText = function(txt){
         $scope.textmsg = txt;
     }
+    $scope.toDateDisplay = function(timestamp){
+        return (new Date(timestamp)).toString()
+    }
     $scope.items = []
     $scope.hunts = []
     $scope.rawMessages = []
@@ -107,15 +108,18 @@ function ($timeout, $scope, $modal, SMS, Hunts, Items){
         if($scope.selectedHunt && $scope.selectedHunt.active){
             cutoff = {cutoff: timestamp.toString()}
             SMS.receiveTexts(cutoff,function(data){
+                console.log(data)
                 var newTimestamp = timestamp
                 if($scope.selectedHunt && $scope.selectedHunt.active){
-                    _.each(data,function(groupMessages){
-                        var group = _.find($scope.selectedHunt.groups,function(g){return g.id == groupMessages.id})
-                        if(group){
-                            _.each(groupMessages.messages,function(m){
+                    _.each(data,function(group){
+                        var internalGroup = _.find($scope.selectedHunt.groups,function(g){return g.id == group.id})
+                        if(internalGroup){
+                            _.each(group.messages,function(m){
                                 if(newTimestamp < m.timestamp) newTimestamp = m.timestamp
-                                group.messages.splice(0,0,m)
+                                internalGroup.messages.splice(0,0,m)
                             })
+                        } else {
+                            $scope.selectedHunt.groups.push(group)
                         }
                     })
                 }
