@@ -55,8 +55,8 @@ object ScavengerHunt extends Controller{
       message.get match {
         case x if x.toLowerCase.startsWith("start") => {
           val xsplit = x.split(" ")
-          if(xsplit.length == 2){
-            val name = xsplit(1)
+          if(xsplit.length > 2){
+            val name = xsplit.tail.mkString(" ")
             Group.addEndpoint(name,number.get)
           }
         }
