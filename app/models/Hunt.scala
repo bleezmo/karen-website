@@ -9,20 +9,20 @@ import com.mongodb.casbah.Imports._
 import mongoContext._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.Logger
 
 case class Hunt (date: Date = new Date(), groups:Seq[ObjectId] = Seq(), active:Boolean = true, id: ObjectId = new ObjectId())
 object Hunt extends ModelCompanion[Hunt,ObjectId]{
   val dao = new SalatDAO[Hunt, ObjectId](collection = db("hunts")) {}
 
-  def newHunt:Hunt = {
-    closeActiveHunt
-    Hunt.findOneById(Hunt.insert(Hunt()).get).get
-  }
-
   def getActiveHunt:Option[Hunt] = Hunt.findOne(MongoDBObject("active" -> true))
   def getActiveGroups:Seq[Group] = getActiveHunt.map(h => h.groups.map(id => Group.findOneById(id)).flatten).getOrElse(Seq())
   def closeActiveHunt = {
-    Hunt.update(MongoDBObject("active" -> true),MongoDBObject("active" -> false),false,false)
+    try{
+      Hunt.update(MongoDBObject("active" -> true),MongoDBObject("active" -> false),false,true)
+    } catch {
+      case e:SalatDAOUpdateError => Logger.error("error closing active hunt: "+e.getMessage)
+    }
   }
 
   implicit val huntReads:Reads[Hunt] = (

@@ -88,7 +88,7 @@ object ScavengerHunt extends Controller{
             }
 
           }catch{
-            case e:SalatInsertError => InternalServerError("error occured on insert")
+            case e:SalatInsertError => InternalServerError("error occured on insert hunt insert: "+e.getMessage)
           }
         }
         case JsError(errors) => BadRequest("couldn't parse json")
