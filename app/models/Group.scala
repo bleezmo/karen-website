@@ -46,7 +46,7 @@ object Group extends ModelCompanion[Group,ObjectId]{
   def getNewMessages(groupId:ObjectId, optcutoff:Option[Long]):Seq[GroupMessage] = {
     findOneById(groupId) match {
       case Some(group) => optcutoff match {
-        case Some(cutoff) => group.messages.filter(gm => gm.timestamp > cutoff)
+        case Some(cutoff) => group.messages.filter(gm => gm.timestamp > cutoff).reverse
         case None => group.messages
       }
       case None => {
