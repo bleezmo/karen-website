@@ -47,7 +47,7 @@ object Group extends ModelCompanion[Group,ObjectId]{
     findOneById(groupId) match {
       case Some(group) => optcutoff match {
         case Some(cutoff) => group.messages.filter(gm => gm.timestamp > cutoff).reverse
-        case None => group.messages
+        case None => group.messages.reverse
       }
       case None => {
         Logger.error("Group.getNewMessages: no group found given id")
@@ -71,7 +71,7 @@ object Group extends ModelCompanion[Group,ObjectId]{
 
   implicit val groupWrites:Writes[Group] = new Writes[Group] {
     def writes(g: Group): JsValue = {
-      Json.obj("id" -> g.id.toString, "name" -> g.name, "messages" -> g.messages)
+      Json.obj("id" -> g.id.toString, "name" -> g.name, "messages" -> g.messages.reverse)
     }
   }
 }
